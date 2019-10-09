@@ -25,6 +25,8 @@
             <FrameLayout
                 android:id="@+id/recinto_entrada"
                 android:background="@drawable/recinto_mapa"
+                android:layout_height="0px"
+                android:layout_width="0px"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/recinto_generalife"
                 app:layout_constraintStart_toStartOf="parent"
@@ -35,6 +37,8 @@
             <FrameLayout
                 android:id="@+id/recinto_generalife"
                 android:background="@drawable/recinto_mapa"
+                android:layout_height="0px"
+                android:layout_width="0px"
                 app:layout_constraintBottom_toTopOf="@+id/recinto_entrada"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/recinto_palacios"
@@ -45,6 +49,8 @@
             <FrameLayout
                 android:id="@+id/recinto_alcazaba"
                 android:background="@drawable/recinto_mapa"
+                android:layout_height="0px"
+                android:layout_width="0px"
                 app:layout_constraintEnd_toStartOf="@+id/recinto_generalife"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -55,6 +61,8 @@
             <FrameLayout
                 android:id="@+id/recinto_palacios"
                 android:background="@drawable/recinto_mapa"
+                android:layout_height="0px"
+                android:layout_width="0px"
                 app:layout_constraintBottom_toTopOf="@+id/recinto_entrada"
                 app:layout_constraintEnd_toStartOf="@+id/recinto_generalife"
                 app:layout_constraintStart_toStartOf="parent"
