@@ -12,18 +12,25 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import android.content.Intent;
+
 public class MainActivity extends AppCompatActivity {
     private FusedLocationProviderClient mFusedLocationProviderClient; // Usa el GPS y/o WIFI
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_main);
 
-        setContentView(R.layout.mostrar_localizacion);
+        // Cambio a la actividad para probar la localización
+        Intent intent = new Intent(this, ShowLocationActivity2.class);
+        //startActivity(intent);
 
-        connectLocationClient();
-        getLocation();
+        setContentView(R.layout.activity_main);
+
+        //setContentView(R.layout.mostrar_localizacion);
+
+        //connectLocationClient();
+        //getLocation();
     }
 
     protected void connectLocationClient(){

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Practica1_NPI</string>
+    <string name="title_activity_show_location2">ShowLocationActivity2</string>
 </resources>
