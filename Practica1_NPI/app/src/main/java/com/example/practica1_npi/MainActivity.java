@@ -10,7 +10,10 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.RotateAnimation;
 import android.widget.TextView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -27,8 +30,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private float[] mGravity = null;   // Atributos que guardan los datos recibidos por los sensores
     private float[] mGeomagnetic = null;
-    private float azimuth = 0; // Ángulo entre el norte y el dispositivo (según eje Z) (en grados)
-    private float umbralAzimuth = 25; // Valor (en grados) que tiene que variar el azimuth para que se tenga en cuenta
+    private int azimuth = 0; // Ángulo entre el norte y el dispositivo (según eje Z) (en grados)
+    private int umbralAzimuth = 25; // Valor (en grados) que tiene que variar el azimuth para que se tenga en cuenta
 
     // Quitar
     private TextView txtOrientation;
@@ -48,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //setContentView(R.layout.mostrar_localizacion);
 
         // La orientación Inicial es mirando al norte
-        setMapRotation(0);
+        setMapRotation(0, 0);
 
         txtOrientation = findViewById(R.id.txtOrientation);
     }
@@ -73,26 +76,46 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mSensorManager.unregisterListener(this);
     }
 
-    private void setMapRotation(float grades){
+    // MAL: hay un bug que hace que parpadee
+    private void setMapRotation(int old_azimuth, int new_azimuth){
         ConstraintLayout map = (ConstraintLayout)findViewById(R.id.mapa);
 
-        // Aplica la rotación lentamente
+        // Aplica la rotación lentamente mediante una animación
+        int rotation, rot1, rot2;
 
-        // Ver cómo hacerlo lentamente!!!
-        /*if (grades > map.getRotation()) {
-            float rot_inc = 1; // En grados
+        // Veo si es más corta la rotación hacia la derecha o hacia la izquierda
+        rot1 = new_azimuth - old_azimuth;
+        rot2 = 360 - Math.abs(rot1);
 
-            for (float curr_rot = map.getRotation(); curr_rot <= grades; curr_rot += rot_inc)
-                map.setRotation(curr_rot);
-        }
-        else{
-            float rot_inc = -1; // En grados
+        if (rot1 >= 0) // El sentido de rotación de rot2 es el opuesto de rot1
+            rot2 *= -1;
 
-            for (float curr_rot = map.getRotation(); curr_rot >= grades; curr_rot += rot_inc)
-                map.setRotation(curr_rot);
-        }*/
+        if (Math.min(Math.abs(rot1), Math.abs(rot2)) == Math.abs(rot1))
+            rotation = rot1;
+        else
+            rotation = rot2;
 
-        map.setRotation(grades);
+        RotateAnimation rotate = new RotateAnimation(0, rotation,
+                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,
+                0.5f);
+        rotate.setDuration(1000);
+        map.setAnimation(rotate);
+
+        // Cuando termina la animación establezco la rotación del mapa a la orientación final de la animación
+        rotate.setAnimationListener(new Animation.AnimationListener(){
+            @Override
+            public void onAnimationStart(Animation arg0) {
+            }
+            @Override
+            public void onAnimationRepeat(Animation arg0) {
+            }
+            @Override
+            public void onAnimationEnd(Animation arg0) {
+                map.setRotation(new_azimuth);
+            }
+        });
+
+
     }
 
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}
@@ -100,38 +123,64 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     // Método que se llama automáticamente cuando hay nuevos datos de sensores
     public void onSensorChanged(SensorEvent event){
 
-        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
-            mGravity = event.values;
+        // Solo tengo en cuenta las mediciones con cierta precisión
+        if (event.accuracy >= SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM) {
 
-        if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
-            mGeomagnetic = event.values;
+            if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
+                mGravity = event.values;
 
-        // Calcular orientación una vez tenemos
-        if (mGravity != null && mGeomagnetic != null) {
-            float R[] = new float[9];
-            float I[] = new float[9];
+            if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
+                mGeomagnetic = event.values;
 
-            // Obtenemos la matriz de rotación del dispositivo en coordenadas mundiales a partir
-            // de la información del magnetómetro y acelerómetro
-            boolean success = SensorManager.getRotationMatrix(R, I, mGravity, mGeomagnetic);
+            // Calcular orientación una vez tenemos
+            if (mGravity != null && mGeomagnetic != null) {
+                float R[] = new float[9];
+                float I[] = new float[9];
 
-            if (success) {
-                float orientation[] = new float[3];
-                SensorManager.getOrientation(R, orientation);
-                float azimuth_rad = orientation[0]; // Azimuth -> ángulo en radianes de rotación según el eje Z. El rango de valores es [-PI, PI]
-                float azimuth_grad = (float)Math.toDegrees(-azimuth_rad); // La rotación es en sentido opuesto
+                // Obtenemos la matriz de rotación del dispositivo en coordenadas mundiales a partir
+                // de la información del magnetómetro y acelerómetro
+                boolean success = SensorManager.getRotationMatrix(R, I, mGravity, mGeomagnetic);
 
-                //if (Math.abs(azimuth_grad - azimuth) >= umbralAzimuth) {
-                    azimuth = azimuth_grad; // La rotación es en sentido opuesto
+                if (success) {
+                    float orientation[] = new float[3];
+                    SensorManager.getOrientation(R, orientation);
+                    float azimuth_rad = orientation[0]; // Azimuth -> ángulo en radianes de rotación según el eje Z. El rango de valores es [-PI, PI]
+                    int azimuth_grad = (int) Math.toDegrees(-azimuth_rad); // La rotación es en sentido opuesto
 
-                    // Roto el mapa según el azimuth
-                    setMapRotation(azimuth);
+                    if (distAzimuths(azimuth_grad, azimuth) >= umbralAzimuth) {
+                        int azimuth_prev = azimuth;
 
-                    // Quitar
-                    txtOrientation.setText("Azimuth: " + Float.toString(azimuth_rad));
-                //}
+                        // Lo transformo al rango [0, 360)
+                        if (azimuth_grad >= 0)
+                            azimuth = (int) azimuth_grad;
+                        else
+                            azimuth = (int) (azimuth_grad + 360);
+
+                        // Roto el mapa según el azimuth
+                        setMapRotation(azimuth_prev, azimuth);
+
+                        // Quitar
+                        txtOrientation.setText("Azimuth: " + Integer.toString(azimuth));
+                    }
+                }
             }
         }
+    }
 
+    // Los azimuths tienen que ser en grados
+    private int distAzimuths(int a, int b){
+        int az_a, az_b;
+
+        if (a >= 0)
+            az_a = a;
+        else // Si es negativo, lo paso del rango [-180, 0) a [180, 360)
+            az_a = a + 360;
+
+        if (b >= 0)
+            az_b = b;
+        else
+            az_b = b + 360;
+
+        return Math.abs(az_a - az_b);
     }
 }
