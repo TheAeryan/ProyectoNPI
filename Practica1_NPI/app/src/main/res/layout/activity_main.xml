@@ -22,7 +22,7 @@
             android:layout_width="270dp"
             android:layout_height="269dp"
             android:layout_gravity="center"
-            android:rotation="0"
+            android:rotation="10"
             android:background="@drawable/fondo_mapa">
 
             <FrameLayout

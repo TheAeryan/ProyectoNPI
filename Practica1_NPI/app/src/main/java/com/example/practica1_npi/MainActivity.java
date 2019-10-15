@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // Aplica la rotación lentamente
 
         // Ver cómo hacerlo lentamente!!!
-        if (grades > map.getRotation()) {
+        /*if (grades > map.getRotation()) {
             float rot_inc = 1; // En grados
 
             for (float curr_rot = map.getRotation(); curr_rot <= grades; curr_rot += rot_inc)
@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             for (float curr_rot = map.getRotation(); curr_rot >= grades; curr_rot += rot_inc)
                 map.setRotation(curr_rot);
-        }
+        }*/
 
         map.setRotation(grades);
     }
@@ -118,18 +118,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (success) {
                 float orientation[] = new float[3];
                 SensorManager.getOrientation(R, orientation);
-                float azimuth_rad = orientation[0]; // Azimuth -> ángulo en radianes de rotación según el eje Z
-                float azimuth_grad = (float)Math.toDegrees(azimuth_rad);
+                float azimuth_rad = orientation[0]; // Azimuth -> ángulo en radianes de rotación según el eje Z. El rango de valores es [-PI, PI]
+                float azimuth_grad = (float)Math.toDegrees(-azimuth_rad); // La rotación es en sentido opuesto
 
-                if (Math.abs(azimuth_grad - azimuth) >= umbralAzimuth) {
-                    azimuth = azimuth_grad;
+                //if (Math.abs(azimuth_grad - azimuth) >= umbralAzimuth) {
+                    azimuth = azimuth_grad; // La rotación es en sentido opuesto
 
                     // Roto el mapa según el azimuth
                     setMapRotation(azimuth);
 
                     // Quitar
-                    txtOrientation.setText("Azimuth: " + Float.toString(azimuth));
-                }
+                    txtOrientation.setText("Azimuth: " + Float.toString(azimuth_rad));
+                //}
             }
         }
 
