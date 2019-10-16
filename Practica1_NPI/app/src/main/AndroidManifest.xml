@@ -22,7 +22,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".ShowLocationActivity" />
-        <activity android:name=".ShowLocationActivity2" />
     </application>
 
 </manifest>

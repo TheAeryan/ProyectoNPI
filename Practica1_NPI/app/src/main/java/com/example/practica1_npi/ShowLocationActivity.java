@@ -1,117 +1,176 @@
 package com.example.practica1_npi;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.Context;
 import android.content.pm.PackageManager;
-import android.location.Criteria;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
+import android.os.Looper;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.core.app.ActivityCompat;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+
+import android.location.Location;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
-public class ShowLocationActivity extends Activity implements LocationListener {
-    private TextView latituteField;
-    private TextView longitudeField;
-    private LocationManager locationManager;
-    private String provider;
+public class ShowLocationActivity extends AppCompatActivity{
+    private TextView txtLocation;
+    private double wayLatitude = 0.0, wayLongitude = 0.0;
 
-    /** Called when the activity is first created. */
+    private FusedLocationProviderClient mFusedLocationClient;
+
+    private LocationRequest locationRequest;
+    private LocationCallback locationCallback;
+
+    private int updateInterval = 2000; // Cada cuánto se actualiza la posición (en milisegundos)
+
+    private int ind_llamada = 0;
+
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.test_location);
 
-        /*
-        latituteField = (TextView) findViewById(R.id.TextView02);
-        longitudeField = (TextView) findViewById(R.id.TextView04);
+        this.txtLocation = (TextView) findViewById(R.id.txtLocation);
 
-        // Get the location manager
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        // Define the criteria how to select the locatioin provider -> use
-        // default
-        Criteria criteria = new Criteria();
-        provider = locationManager.getBestProvider(criteria, false);
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        Location location = null;
-
+        // Pedir permisos si es necesario
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && checkSelfPermission(ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-            ActivityCompat.requestPermissions(this, new String[]{ACCESS_COARSE_LOCATION}, 1);
-            ActivityCompat.requestPermissions(this, new String[]{ACCESS_FINE_LOCATION}, 1);
-
-            latituteField.setText("<SIN PERMISOS>");
-            longitudeField.setText("<SIN PERMISOS>");
+            ActivityCompat.requestPermissions(this, new String[]{ACCESS_COARSE_LOCATION,
+                    ACCESS_FINE_LOCATION}, 1);
         }
-        else // Tengo permisos
-            location = locationManager.getLastKnownLocation(provider);
+        else{
+            mFusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
+                if (location != null) {
+                    wayLatitude = location.getLatitude();
+                    wayLongitude = location.getLongitude();
+                    txtLocation.setText(Double.toString(wayLatitude) + ", " +
+                            Double.toString(wayLongitude));
+                }
+            });
+        }
 
-        // Initialize the location fields
-        if (location != null) {
-            System.out.println("Provider " + provider + " has been selected.");
-            onLocationChanged(location);
-        } else {
-            latituteField.setText("Location not available");
-            longitudeField.setText("Location not available");
-        }*/
+        locationRequest = LocationRequest.create();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(updateInterval);
+
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    wayLatitude = location.getLatitude();
+                    wayLongitude = location.getLongitude();
+
+                    float accuracy = location.getAccuracy();
+                    float speed = location.getSpeed();
+
+                    txtLocation.setText(Integer.toString(ind_llamada) + " - " +
+                            Double.toString(wayLatitude) + ", " +
+                            Double.toString(wayLongitude) + "\nPrecisión (m): " +
+                            Float.toString(accuracy) + "\nVelocidad (m/s): " +
+                            Float.toString(speed));
+
+                    ind_llamada++;
+                }
+            };
+        };
+
+        // Periódicamente obtenemos la localización
+        startLocationUpdates();
     }
 
-    /* Request updates at startup */
+    private void startLocationUpdates() {
+        mFusedLocationClient.requestLocationUpdates(locationRequest,
+                locationCallback,
+                Looper.getMainLooper());
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
-        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && checkSelfPermission(ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this, new String[]{ACCESS_COARSE_LOCATION}, 1);
-            ActivityCompat.requestPermissions(this, new String[]{ACCESS_FINE_LOCATION}, 1);
-
-            latituteField.setText("<SIN PERMISOS>");
-            longitudeField.setText("<SIN PERMISOS>");
-        }
-        else // Tengo permisos
-            locationManager.requestLocationUpdates(provider, 400, 1, this);
+        startLocationUpdates();
     }
 
-    /* Remove the locationlistener updates when Activity is paused */
+    // Dejar de obtener la localización si la aplicación está en segundo plano
     @Override
     protected void onPause() {
         super.onPause();
-        locationManager.removeUpdates(this);
+        stopLocationUpdates();
     }
 
+    private void stopLocationUpdates() {
+        mFusedLocationClient.removeLocationUpdates(locationCallback);
+    }
+
+    // Método que se ejecuta tras pedir los permisos
     @Override
-    public void onLocationChanged(Location location) {
-        double lat = (location.getLatitude());
-        double lng = (location.getLongitude());
-        latituteField.setText(Double.toString(lat));
-        longitudeField.setText(Double.toString(lng));
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case 1: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    mFusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
+                        if (location != null) {
+                            wayLatitude = location.getLatitude();
+                            wayLongitude = location.getLongitude();
+                            txtLocation.setText(Double.toString(wayLatitude) + ", " +
+                                    Double.toString(wayLongitude));
+                        }
+                    });
+                } else {
+                    Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            }
+        }
     }
 
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-        // TODO Auto-generated method stub
+    // Acción del botón
+    public void requestLocation(View view){
+        // Obtengo la localización y la escribo
 
+        Task location = mFusedLocationClient.getLastLocation();
+        location.addOnCompleteListener(new OnCompleteListener() {
+            @Override
+            public void onComplete(@NonNull Task task) {
+                if (task.isSuccessful()){
+                    // Se ha podido obtener la localización
+                    Location currentLocation = (Location) task.getResult();
+
+                    wayLatitude = currentLocation.getLatitude();
+                    wayLongitude = currentLocation.getLongitude();
+                    txtLocation.setText(Integer.toString(ind_llamada) + " - " +
+                            Double.toString(wayLatitude) + ", " +
+                            Double.toString(wayLongitude));
+
+                    ind_llamada++;
+                }else{
+                    // No se ha podido obtener la localización
+                    txtLocation.setText("<<ERROR>>");
+                }
+            }
+        });
     }
 
-    @Override
-    public void onProviderEnabled(String provider) {
-        Toast.makeText(this, "Enabled new provider " + provider,
-                Toast.LENGTH_SHORT).show();
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-        Toast.makeText(this, "Disabled provider " + provider,
-                Toast.LENGTH_SHORT).show();
-    }
 }

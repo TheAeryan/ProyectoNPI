@@ -1,25 +1,19 @@
 package com.example.practica1_npi;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import android.graphics.PointF;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.TextView;
-
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 
 import android.content.Intent;
 
@@ -28,10 +22,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Sensor accelerometer;
     private Sensor magnetometer;
 
+    // <Atributos para la rotación del mapa>
+
     private float[] mGravity = null;   // Atributos que guardan los datos recibidos por los sensores
     private float[] mGeomagnetic = null;
     private int azimuth = 0; // Ángulo entre el norte y el dispositivo (según eje Z) (en grados)
     private int umbralAzimuth = 25; // Valor (en grados) que tiene que variar el azimuth para que se tenga en cuenta
+
+    // <Atributos para el manejo de la línea temporal>
+    private int pointer0Id; // IDs de cada puntero
+    private int pointer1Id;
+    private PointF pointer0Pos; // Posición antigua del puntero
+    private PointF pointer1Pos;
+    private PointF pointer0NewPos; // Posición nueva del puntero
+    private PointF pointer1NewPos;
+    private boolean gestureStarted = false;
+    private float umbralDespX = 30; // El desplazamiento en el Eje X debe superar este umbral para que se tenga en cuenta
+    private float yearChangeFactor = 0.1f; // Cuántos años se añaden/quitan por píxel desplazado
 
     // Quitar
     private TextView txtOrientation;
@@ -41,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
 
         // Cambio a la actividad para probar la localización
-        Intent intent = new Intent(this, ShowLocationActivity2.class);
+        //Intent intent = new Intent(this, ShowLocationActivity.class);
         //startActivity(intent);
 
         setContentView(R.layout.activity_main);
@@ -182,5 +189,101 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             az_b = b + 360;
 
         return Math.abs(az_a - az_b);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        super.onTouchEvent(event);
+
+        LineaTemporal linea_temporal = (LineaTemporal)findViewById(R.id.linea_temporal);
+
+        // Define que accion se esta realizando en la pantalla
+        // getAction(): clase de acción que se está ejecutando.
+        // ACTION_MASK: máscara de bits de partes del código de acción.
+        int action = event.getAction() & MotionEvent.ACTION_MASK;
+        switch(action) {
+            // Pulsamos
+            case MotionEvent.ACTION_DOWN: {
+                // Me espero a pulsar el segundo dedo
+                break;
+            }
+            // Movemos
+            case MotionEvent.ACTION_MOVE:   {
+                if (gestureStarted){
+                    // Calculo las nuevas posiciones de los punteros
+                    pointer0NewPos = new PointF(event.getX(event.findPointerIndex(pointer0Id)),
+                            event.getY(event.findPointerIndex(pointer0Id)));
+                    pointer1NewPos = new PointF(event.getX(event.findPointerIndex(pointer1Id)),
+                            event.getY(event.findPointerIndex(pointer1Id)));
+
+                    // Calculo las diferencias en posición
+                    float pointer0_diff_x = pointer0NewPos.x - pointer0Pos.x;
+                    float pointer1_diff_x = pointer1NewPos.x - pointer1Pos.x;
+
+                    // El desplazamiento en x es igual a la media entre ambos desplazamientos
+                    float desp_x;
+
+                    desp_x = (pointer0_diff_x + pointer1_diff_x) / 2.0f;
+
+                    int year_inc;
+
+                    if (Math.abs(desp_x) > umbralDespX) // Solo tengo en cuenta el desplazamiento si es significativo
+                        year_inc = (int)(desp_x*yearChangeFactor);
+                    else
+                        year_inc = 0;
+
+                    // Cambio el año seleccionado
+                    linea_temporal.addIndexYear(year_inc);
+
+                    // Guardo la nueva posición de los punteros
+                    pointer0Pos = pointer0NewPos;
+                    pointer1Pos = pointer0NewPos;
+                }
+
+                break;
+            }
+            // Levantamos
+            case MotionEvent.ACTION_UP:   {
+                break;
+            }
+
+            // Pulsamos con mas de un dedo
+            case MotionEvent.ACTION_POINTER_DOWN: {
+                if (event.getPointerCount() == 2 && !gestureStarted) { // Solo se puede pulsar con dos dedos
+                    // Guardo la información de ambos punteros
+                    pointer0Id = event.getPointerId(0);
+                    pointer0Pos = new PointF(event.getX(0), event.getY(0));
+                    pointer1Id = event.getPointerId(1);
+                    pointer1Pos = new PointF(event.getX(1), event.getY(1));
+
+                    gestureStarted = true;
+                }
+                else if (gestureStarted) { // Cancelo el gesto si pulsa con un tercer dedo
+                    gestureStarted = false;
+                }
+
+                break;
+            }
+            // Levantamos un dedo
+            case MotionEvent.ACTION_POINTER_UP:   {
+                // Reseteo el gesto en el caso de que ya hubiera empezado (tuviera los dos dedos sobre la pantalla)
+                if (gestureStarted) {
+                    gestureStarted = false;
+                }
+
+                break;
+            }
+
+            // La ventana pierde el focus
+            case MotionEvent.ACTION_CANCEL:{
+                gestureStarted = false; // Cancelo el gesto
+
+                break;
+            }
+
+        }
+
+
+        return true;
     }
 }
