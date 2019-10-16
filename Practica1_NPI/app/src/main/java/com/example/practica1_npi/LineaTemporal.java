@@ -55,7 +55,6 @@ public class LineaTemporal extends View {
         initialize();
     }
 
-    // Muestra los puntos en la pantalla (incluidos la linea y el punto medio)
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
