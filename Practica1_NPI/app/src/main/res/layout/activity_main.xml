@@ -28,16 +28,15 @@
         android:background="@android:color/holo_green_dark"
         android:orientation="vertical">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <com.example.practica1_npi.Mapa
             android:id="@+id/mapa"
             android:layout_width="270dp"
-            android:layout_height="269dp"
+            android:layout_height="270dp"
             android:layout_gravity="center"
             android:background="@drawable/fondo_mapa">
 
-            <FrameLayout
+            <com.example.practica1_npi.RecintoMapa
                 android:id="@+id/recinto_entrada"
-                android:background="@drawable/recinto_mapa"
                 android:layout_height="0px"
                 android:layout_width="0px"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -45,11 +44,11 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintVertical_weight="0.2"
-                tools:layout_editor_absoluteX="0dp"></FrameLayout>
+                tools:layout_editor_absoluteX="0dp"></com.example.practica1_npi.RecintoMapa>
 
-            <FrameLayout
+            <com.example.practica1_npi.RecintoMapa
                 android:id="@+id/recinto_generalife"
-                android:background="@drawable/recinto_mapa"
+                android:background="@drawable/recinto_mapa_apagado"
                 android:layout_height="0px"
                 android:layout_width="0px"
                 app:layout_constraintBottom_toTopOf="@+id/recinto_entrada"
@@ -58,11 +57,11 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintHorizontal_weight="0.4"
                 app:layout_constraintVertical_weight="0.8">
-            </FrameLayout>
+            </com.example.practica1_npi.RecintoMapa>
 
-            <FrameLayout
+            <com.example.practica1_npi.RecintoMapa
                 android:id="@+id/recinto_alcazaba"
-                android:background="@drawable/recinto_mapa"
+                android:background="@drawable/recinto_mapa_apagado"
                 android:layout_height="0px"
                 android:layout_width="0px"
                 app:layout_constraintEnd_toStartOf="@+id/recinto_generalife"
@@ -72,11 +71,11 @@
                 app:layout_constraintHorizontal_weight="0.6"
                 app:layout_constraintVertical_weight="0.3">
 
-            </FrameLayout>
+            </com.example.practica1_npi.RecintoMapa>
 
-            <FrameLayout
+            <com.example.practica1_npi.RecintoMapa
                 android:id="@+id/recinto_palacios"
-                android:background="@drawable/recinto_mapa"
+                android:background="@drawable/recinto_mapa_apagado"
                 android:layout_height="0px"
                 android:layout_width="0px"
                 app:layout_constraintBottom_toTopOf="@+id/recinto_entrada"
@@ -86,9 +85,9 @@
                 app:layout_constraintVertical_bias="1.0"
                 app:layout_constraintHorizontal_weight="0.6"
                 app:layout_constraintVertical_weight="0.5">
-            </FrameLayout>
+            </com.example.practica1_npi.RecintoMapa>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.example.practica1_npi.Mapa>
 
     </FrameLayout>
 
