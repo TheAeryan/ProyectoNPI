@@ -15,7 +15,7 @@ public class LineaTemporal extends View {
 
     // Atributos de la línea temporal (rectángulo)
     private float percWidth = 0.7f; // Tanto por ciento del ancho que ocupa (de su espacio asignado)
-    private float percHeight = 0.3f; // Tanto por ciento del alto que ocupa
+    private float percHeight = 0.4f; // Tanto por ciento del alto que ocupa
     private Paint rectPaint;
     private int cornerRadius = 20;
 

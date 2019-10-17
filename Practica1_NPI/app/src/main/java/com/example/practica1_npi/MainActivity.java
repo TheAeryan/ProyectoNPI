@@ -9,6 +9,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
@@ -27,18 +28,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float[] mGravity = null;   // Atributos que guardan los datos recibidos por los sensores
     private float[] mGeomagnetic = null;
     private int azimuth = 0; // Ángulo entre el norte y el dispositivo (según eje Z) (en grados)
-    private int umbralAzimuth = 25; // Valor (en grados) que tiene que variar el azimuth para que se tenga en cuenta
+    private int umbralAzimuth = 30; // Valor (en grados) que tiene que variar el azimuth para que se tenga en cuenta
+
+    // <Atributos para la animación de la rotación>
+
+    private Runnable mapAnimation; // Se encarga de ejecutar la animación de rotación del mapa
+    Handler mHandler; // Handler que se encarga de controlar la animación
+    private int currAnimIt = 0; // Iteración de la animación en proceso (si no vale 0, hay una animación en proceso)
+    private int totalAnimIt = 0; // Número de iteraciones (frames) de la animación en proceso
+    private int azimuthAnim; // Azimuth actual de la animación (cuando la animación termina, este valor coincide con azimuth)
 
     // <Atributos para el manejo de la línea temporal>
-    private int pointer0Id; // IDs de cada puntero
-    private int pointer1Id;
-    private PointF pointer0Pos; // Posición antigua del puntero
-    private PointF pointer1Pos;
-    private PointF pointer0NewPos; // Posición nueva del puntero
-    private PointF pointer1NewPos;
+
+    private float oldX;
+    private float newX;
     private boolean gestureStarted = false;
-    private float umbralDespX = 30; // El desplazamiento en el Eje X debe superar este umbral para que se tenga en cuenta
-    private float yearChangeFactor = 0.1f; // Cuántos años se añaden/quitan por píxel desplazado
+    private float yearChangeFactor = 0.15f; // Cuántos años se añaden/quitan por píxel desplazado
 
     // Quitar
     private TextView txtOrientation;
@@ -46,6 +51,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mHandler = new Handler();
 
         // Cambio a la actividad para probar la localización
         //Intent intent = new Intent(this, ShowLocationActivity.class);
@@ -56,9 +63,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         getSensors();
 
         //setContentView(R.layout.mostrar_localizacion);
-
-        // La orientación Inicial es mirando al norte
-        setMapRotation(0, 0);
 
         txtOrientation = findViewById(R.id.txtOrientation);
     }
@@ -87,7 +91,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void setMapRotation(int old_azimuth, int new_azimuth){
         ConstraintLayout map = (ConstraintLayout)findViewById(R.id.mapa);
 
-        // Aplica la rotación lentamente mediante una animación
+        // Si ya había una animación en proceso, la cancelo y retomo por donde iba
+        if (currAnimIt != 0){
+            mHandler.removeCallbacks(mapAnimation);
+            old_azimuth = azimuthAnim; // Empiezo por el azimuth de la animación cancelada
+        }
+
         int rotation, rot1, rot2;
 
         // Veo si es más corta la rotación hacia la derecha o hacia la izquierda
@@ -102,27 +111,41 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         else
             rotation = rot2;
 
-        RotateAnimation rotate = new RotateAnimation(0, rotation,
-                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,
-                0.5f);
-        rotate.setDuration(1000);
-        map.setAnimation(rotate);
+        // Aplico la rotación lentamente
+        int deg_inc;
 
-        // Cuando termina la animación establezco la rotación del mapa a la orientación final de la animación
-        rotate.setAnimationListener(new Animation.AnimationListener(){
-            @Override
-            public void onAnimationStart(Animation arg0) {
-            }
-            @Override
-            public void onAnimationRepeat(Animation arg0) {
-            }
-            @Override
-            public void onAnimationEnd(Animation arg0) {
-                map.setRotation(new_azimuth);
-            }
-        });
+        if (rotation >= 0) // Incrementos de 1 o -1 grados
+            deg_inc = 1;
+        else
+            deg_inc = -1;
 
+        int dur_inc = 4; // Duración en milisegundos de cada incremento
 
+        currAnimIt = 1; // Empezamos por la primera iteración de la animación
+        totalAnimIt = Math.abs(rotation / deg_inc);
+
+        final int old_azimuth2 = old_azimuth; // Hago la variable final para poder usarla en la inner class
+
+        mapAnimation = new Runnable() {
+            @Override
+            public void run() {
+                // Aplico la rotación de un incremento
+                if (currAnimIt <= totalAnimIt){
+                    azimuthAnim = old_azimuth2 + deg_inc*currAnimIt;
+                    map.setRotation(azimuthAnim);
+                    currAnimIt += 1;
+
+                    mHandler.postDelayed(mapAnimation, dur_inc);
+                }
+                else{ // Termino la animación
+                    currAnimIt = 0;
+                    totalAnimIt = 0;
+                    mHandler.removeCallbacks(mapAnimation);
+                }
+            }
+        };
+
+        mHandler.postDelayed(mapAnimation, dur_inc);
     }
 
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}
@@ -210,34 +233,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             // Movemos
             case MotionEvent.ACTION_MOVE:   {
                 if (gestureStarted){
-                    // Calculo las nuevas posiciones de los punteros
-                    pointer0NewPos = new PointF(event.getX(event.findPointerIndex(pointer0Id)),
-                            event.getY(event.findPointerIndex(pointer0Id)));
-                    pointer1NewPos = new PointF(event.getX(event.findPointerIndex(pointer1Id)),
-                            event.getY(event.findPointerIndex(pointer1Id)));
+                    // Calculo la nueva posición x
+                    newX = (event.getX(0) + event.getX(1)) / 2.0f;
 
-                    // Calculo las diferencias en posición
-                    float pointer0_diff_x = pointer0NewPos.x - pointer0Pos.x;
-                    float pointer1_diff_x = pointer1NewPos.x - pointer1Pos.x;
+                    // Calculo el desplazamiento
+                    float desp_x = newX - oldX;
 
-                    // El desplazamiento en x es igual a la media entre ambos desplazamientos
-                    float desp_x;
-
-                    desp_x = (pointer0_diff_x + pointer1_diff_x) / 2.0f;
-
-                    int year_inc;
-
-                    if (Math.abs(desp_x) > umbralDespX) // Solo tengo en cuenta el desplazamiento si es significativo
-                        year_inc = (int)(desp_x*yearChangeFactor);
-                    else
-                        year_inc = 0;
+                    int year_inc = (int)(desp_x*yearChangeFactor);
 
                     // Cambio el año seleccionado
                     linea_temporal.addIndexYear(year_inc);
 
-                    // Guardo la nueva posición de los punteros
-                    pointer0Pos = pointer0NewPos;
-                    pointer1Pos = pointer0NewPos;
+                    // Guardo la nueva posición x
+                    oldX = newX;
                 }
 
                 break;
@@ -250,11 +258,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             // Pulsamos con mas de un dedo
             case MotionEvent.ACTION_POINTER_DOWN: {
                 if (event.getPointerCount() == 2 && !gestureStarted) { // Solo se puede pulsar con dos dedos
-                    // Guardo la información de ambos punteros
-                    pointer0Id = event.getPointerId(0);
-                    pointer0Pos = new PointF(event.getX(0), event.getY(0));
-                    pointer1Id = event.getPointerId(1);
-                    pointer1Pos = new PointF(event.getX(1), event.getY(1));
+                    // Guardo la posición de los dedos como la media de los dos punteros
+                    oldX = (event.getX(0) + event.getX(1)) / 2.0f;
 
                     gestureStarted = true;
                 }
@@ -282,7 +287,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
 
         }
-
 
         return true;
     }

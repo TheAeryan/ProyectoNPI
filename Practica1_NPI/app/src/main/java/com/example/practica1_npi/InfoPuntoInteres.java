@@ -15,6 +15,9 @@ public class InfoPuntoInteres extends RelativeLayout {
     private TextView textInfo;
     private ImageView icon;
 
+    private int imageWidth = 150;
+    private int imageHeight = 150;
+
     public InfoPuntoInteres(Context context) {
         super(context);
         initialize();
@@ -46,7 +49,7 @@ public class InfoPuntoInteres extends RelativeLayout {
         icon = new ImageView(this.getContext());
 
         Bitmap img= BitmapFactory.decodeResource(getResources(),R.drawable.info_icon);//image is your image
-        img= Bitmap.createScaledBitmap(img, 100,100, true);
+        img= Bitmap.createScaledBitmap(img, imageWidth,imageHeight,true);
         icon.setImageBitmap(img);
 
         // Añado el icono
