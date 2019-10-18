@@ -49,7 +49,6 @@
 
             <com.example.practica1_npi.RecintoMapa
                 android:id="@+id/recinto_generalife"
-                android:background="@drawable/recinto_mapa_apagado"
                 android:layout_height="0px"
                 android:layout_width="0px"
                 app:layout_constraintBottom_toTopOf="@+id/recinto_entrada"
@@ -62,7 +61,6 @@
 
             <com.example.practica1_npi.RecintoMapa
                 android:id="@+id/recinto_alcazaba"
-                android:background="@drawable/recinto_mapa_apagado"
                 android:layout_height="0px"
                 android:layout_width="0px"
                 app:layout_constraintEnd_toStartOf="@+id/recinto_generalife"
@@ -76,7 +74,6 @@
 
             <com.example.practica1_npi.RecintoMapa
                 android:id="@+id/recinto_palacios"
-                android:background="@drawable/recinto_mapa_apagado"
                 android:layout_height="0px"
                 android:layout_width="0px"
                 app:layout_constraintBottom_toTopOf="@+id/recinto_entrada"

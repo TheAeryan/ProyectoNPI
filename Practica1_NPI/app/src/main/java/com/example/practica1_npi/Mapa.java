@@ -30,9 +30,26 @@ public class Mapa extends ConstraintLayout {
     }
 
     @Override
-    protected void onDraw(Canvas canvas){
-        // Pruebo a cambiar el fondo de un recinto
-        View view = findViewById(R.id.recinto_entrada);
-        view.setBackgroundColor(Color.BLUE);
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        // Obtengo las vistas
+        View view_entrada = findViewById(R.id.recinto_entrada);
+        View view_alcazaba = findViewById(R.id.recinto_alcazaba);
+        View view_generalife = findViewById(R.id.recinto_generalife);
+        View view_palacios = findViewById(R.id.recinto_palacios);
+
+        // Activo el recinto de la entrada
+        ((RecintoMapa) view_entrada).changeState(2);
+        ((RecintoMapa) view_alcazaba).changeState(1);
+        ((RecintoMapa) view_generalife).changeState(3);
+        ((RecintoMapa) view_palacios).changeState(4);
+
+        // Pinto todos los recintos
+        view_entrada.draw(canvas);
+        view_alcazaba.draw(canvas);
+        view_generalife.draw(canvas);
+        view_palacios.draw(canvas);
+
     }
 }
