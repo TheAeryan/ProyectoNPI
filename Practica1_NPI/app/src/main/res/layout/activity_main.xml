@@ -8,12 +8,6 @@
     tools:context=".MainActivity"
     android:orientation="vertical">
 
-    <com.example.practica1_npi.InfoPuntoInteres
-        android:id="@+id/info_punto_interes"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/holo_green_dark" />
-
     <TextView
         android:id="@+id/txtOrientation"
         android:layout_width="match_parent"

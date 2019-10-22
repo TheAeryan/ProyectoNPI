@@ -112,4 +112,8 @@ public class LineaTemporal extends View {
         // Hago que se vuelva a pintar
         invalidate();
     }
+
+    public int getIndexYear(){
+        return indexYear;
+    }
 }

@@ -8,6 +8,8 @@ import android.view.View;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import java.util.ArrayList;
+
 public class Mapa extends ConstraintLayout {
 
     public Mapa(Context context) {
@@ -26,7 +28,6 @@ public class Mapa extends ConstraintLayout {
     }
 
     private void initialize(){
-
     }
 
     @Override
@@ -40,10 +41,7 @@ public class Mapa extends ConstraintLayout {
         View view_palacios = findViewById(R.id.recinto_palacios);
 
         // Activo el recinto de la entrada
-        ((RecintoMapa) view_entrada).changeState(2);
-        ((RecintoMapa) view_alcazaba).changeState(1);
-        ((RecintoMapa) view_generalife).changeState(3);
-        ((RecintoMapa) view_palacios).changeState(4);
+        ((RecintoMapa) view_entrada).changeActivation(1);
 
         // Pinto todos los recintos
         view_entrada.draw(canvas);
