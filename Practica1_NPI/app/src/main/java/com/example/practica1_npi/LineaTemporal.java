@@ -1,5 +1,6 @@
 package com.example.practica1_npi;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -108,6 +109,12 @@ public class LineaTemporal extends View {
             indexYear = maxYear;
         else if (indexYear < minYear)
             indexYear = minYear;
+
+        // Repinto el mapa por si han cambiado los puntos de interés
+        Activity contexto = (Activity)this.getContext(); // Tengo que llamar al findViewById de la actividad o, si no, solo busca entre las vistas hijas!
+        Mapa mapa = (Mapa)contexto.findViewById(R.id.mapa);
+
+        mapa.invalidate();
 
         // Hago que se vuelva a pintar
         invalidate();

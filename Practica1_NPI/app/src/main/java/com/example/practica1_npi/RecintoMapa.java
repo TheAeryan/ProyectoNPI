@@ -1,5 +1,6 @@
 package com.example.practica1_npi;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -69,7 +70,8 @@ public class RecintoMapa extends FrameLayout {
         pointOfInterestActivated = false;
 
         // Veo cuál es el año actual de la línea temporal
-        LineaTemporal linea_temporal = (LineaTemporal)findViewById(R.id.linea_temporal);
+        Activity contexto = (Activity)this.getContext(); // Tengo que llamar al findViewById de la actividad o, si no, solo busca entre las vistas hijas!
+        LineaTemporal linea_temporal = (LineaTemporal)contexto.findViewById(R.id.linea_temporal);
         int currYear;
 
         if (linea_temporal != null) // Me aseguro de que ya exista la línea temporal
