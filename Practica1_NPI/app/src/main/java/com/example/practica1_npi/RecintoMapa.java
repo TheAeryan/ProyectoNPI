@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -44,7 +45,14 @@ public class RecintoMapa extends FrameLayout {
         arrayPointsInterest = new ArrayList<>();
 
         // Si es el recinto de los palacios, le añado un punto de interés
-        if (this.getId() == R.id.recinto_palacios){ // No funciona
+        String view_id = this.getResources().getResourceName(this.getId());
+
+        Log.i("INFO", "Id de la vista: " + view_id);
+
+        if (view_id.equals("com.example.practica1_npi:id/recinto_palacios")){
+            Log.i("INFO", "FUNCIONA"); // Llega hasta aquí
+
+
             ArrayList<Integer> interval = new ArrayList<>();
             interval.add(new Integer(1400));
             interval.add(new Integer(1600));
