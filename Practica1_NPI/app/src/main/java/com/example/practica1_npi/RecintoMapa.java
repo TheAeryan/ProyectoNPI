@@ -2,6 +2,7 @@ package com.example.practica1_npi;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -204,6 +205,8 @@ public class RecintoMapa extends FrameLayout {
     public boolean onTouchEvent(MotionEvent event) {
         super.onTouchEvent(event);
 
+        Log.i("INFO", "onTouchEvent activado en RecintoMapa");
+
         // Define que accion se esta realizando en la pantalla
         // getAction(): clase de acción que se está ejecutando.
         // ACTION_MASK: máscara de bits de partes del código de acción.
@@ -214,6 +217,12 @@ public class RecintoMapa extends FrameLayout {
                 if (pointOfInterestActivated) { // Si el punto de interés está activado
                     // <TODO>
                     // Cambio a la actividad para mostar la información del punto de interés si el año es el correcto
+                    Activity main_activity = (Activity)getContext();
+
+                    Intent intent = new Intent(main_activity, ActividadTextoPuntoInteres.class);
+
+                    intent.putExtra("interest_info", interest_info); // Poner el mensaje entre la zona de memoria compartida por ambas actividades
+                    main_activity.startActivity(intent);
                 }
 
                 break;
