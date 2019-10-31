@@ -1,0 +1,24 @@
+---- Memoria técnica
+
+Lo que tiene que haber como mínimo en la memoria técnica.
+Las clases, métodos y atributos explicados, así como la relación entre clases. No describir clases estándares (View, Layout...).
+El código tiene que estar comentado para que el profesor pueda ver en más profundidad lo que no está explicado en la memoria.
+Del XML (interfaz) solo hay que poner capturas de la interfaz (el XML lo puede ver en el proyecto, no hay que incluirlo en la documentación).
+Hay que describir cómo se hace la interacción si no es evidente y en qué pantalla se hace: ej.: para mover la linea temporal se necesitan dos dedos y se puede pulsar en cualquier punto de la actividad Main.
+
+---- Memoria individual
+Quiere ver la evolución de nuestra memoria individual a lo largo de las varias entregas (vamos quitando y añadiendo cosas).
+La memoria individual va "en nuestra linea" por lo que no hay que cambiarla en función de lo que implementemos en el proyecto.
+Solo la cambiamos si vemos que nuestra idea tenía fallos, como que no era práctico de implementar.
+"Que mis ideas sean buenas (en la memoria), independientemente de que se hayan implementado o no".
+
+---- Entrega
+Proyecto AndroidStudio tras subirlo a github. Se sube a github usando el gitignore y te descargas el proyecto en un zip. Si el proyecto pesa más de 50MB, se puede dividir el proyecto en varios archivos y subirlos todos (se permite más de un archivo).
+Memoria individual.
+Memoria técnica.
+Vídeo.
+
+Lo grupal (proyecto, memoria técnica y vídeo) lo sube solo un integrante del grupo.
+La memoria individual la subimos todos.
+
+
