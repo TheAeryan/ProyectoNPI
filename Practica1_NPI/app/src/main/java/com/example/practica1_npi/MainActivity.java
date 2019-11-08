@@ -80,12 +80,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
 
-    private int updateInterval = 2000; // Cada cuánto se actualiza la posición (en milisegundos)
+    private int updateInterval = 2000; // Cada cuánto se actualiza la posición como muy pronto (en milisegundos)
 
     // Posición (del centro) de cada recinto (uso la funcionalidad de la localización con 3 de los cuatro recintos)
     private double latEntrada = 0, longEntrada = 0; // PONER LAS POSICIONES DE LAS AULAS DE LA UNI!!!
     private double latPalacios = 37.188691, longPalacios = -3.6178247; // Posición de mi casa
     private double latGeneralife = 50, longGeneralife = 50;
+
+    private int veces_para_cambiar_loc = 5; // Número de veces consecutivas que la localización se debe detectar cercana a un recinto diferente para que se active
+    private int cambios_loc_consecutivos = 0; // Número de veces consecutivas que se ha medido la localización en un recinto diferente
+    private int recinto_activado = 0; // Inicialmente la entrada. 0: entrada, 1: palacios, 2: generalife
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -156,34 +160,60 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     RecintoMapa palacios = (RecintoMapa)findViewById(R.id.recinto_palacios);
                     RecintoMapa generalife = (RecintoMapa)findViewById(R.id.recinto_generalife);
 
-                    if (dist_a_entrada[0] < dist_a_palacios[0] && dist_a_entrada[0] < dist_a_generalife[0]){
-                        // Activo el recinto de entrada
-                        entrada.changeActivation(1);
+                    // Nuevo recinto "activado" -> donde el LocationClient cree que se encuentra el usuario
+                    int nuevo_recinto_activado; // 0: entrada, 1: palacios, 2: generalife
 
-                        // Desactivo el resto (por si estuvieran activados)
-                        palacios.changeActivation(0);
-                        generalife.changeActivation(0);
+                    if (dist_a_entrada[0] < dist_a_palacios[0] && dist_a_entrada[0] < dist_a_generalife[0]){
+                        nuevo_recinto_activado = 0;
                     }
                     else if (dist_a_palacios[0] < dist_a_generalife[0]){
-                        // Activo el recinto de los palacios
-                        palacios.changeActivation(1);
-
-                        // Desactivo el resto (por si estuvieran activados)
-                        entrada.changeActivation(0);
-                        generalife.changeActivation(0);
+                        nuevo_recinto_activado = 1;
                     }
                     else{
-                        // Activo el recinto del generalife
-                        generalife.changeActivation(1);
-
-                        // Desactivo el resto (por si estuvieran activados)
-                        palacios.changeActivation(0);
-                        entrada.changeActivation(0);
+                        nuevo_recinto_activado = 2;
                     }
 
-                    // Invalido el mapa para que se vuelva a pintar
-                    View mapa = findViewById(R.id.mapa);
-                    mapa.invalidate();
+                    if (nuevo_recinto_activado != recinto_activado){
+                        // Posible cambio de recinto
+                        // Aumento en 1 el contador de cambios consecutivos
+                        cambios_loc_consecutivos++;
+
+                        // Se ha medido la localización varias veces consecutivas en un recinto diferente
+                        // Cambio de recinto
+                        if (cambios_loc_consecutivos == veces_para_cambiar_loc){
+                            recinto_activado = nuevo_recinto_activado;
+
+                            // Reseteo el contador de cambios consecutivos
+                            cambios_loc_consecutivos = 0;
+
+                            // Desactivo todos los recintos
+                            entrada.changeActivation(0);
+                            palacios.changeActivation(0);
+                            generalife.changeActivation(0);
+
+                            // Activo el nuevo recinto
+                            switch(recinto_activado){
+                                case 0:
+                                    entrada.changeActivation(1);
+                                    break;
+                                case 1:
+                                    palacios.changeActivation(1);
+                                    break;
+                                case 2:
+                                    generalife.changeActivation(1);
+                                    break;
+                            }
+
+                            // Invalido el mapa para que se vuelva a pintar
+                            View mapa = findViewById(R.id.mapa);
+                            mapa.invalidate();
+                        }
+                    }
+                    else{ // El recinto no ha cambiado
+                        // Reseteo el contador de cambios_consecutivos
+                        cambios_loc_consecutivos = 0;
+                    }
+
                 }
             };
         };
