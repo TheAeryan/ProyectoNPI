@@ -15,8 +15,34 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.TextView;
-
 import android.content.Intent;
+
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
+import android.os.Looper;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+
+import android.location.Location;
+
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener{
     private SensorManager mSensorManager;
@@ -45,8 +71,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean gestureStarted = false;
     private float yearChangeFactor = 0.15f; // Cuántos años se añaden/quitan por píxel desplazado
 
-    // Quitar
-    private TextView txtOrientation;
+    // <Atributos para el manejo de la localización del usuario>
+    private TextView txtLocation;
+    private double wayLatitude = 0.0, wayLongitude = 0.0; // Latitud y longitud actuales
+
+    private FusedLocationProviderClient mFusedLocationClient;
+
+    private LocationRequest locationRequest;
+    private LocationCallback locationCallback;
+
+    private int updateInterval = 2000; // Cada cuánto se actualiza la posición (en milisegundos)
+
+    // Posición (del centro) de cada recinto (uso la funcionalidad de la localización con 3 de los cuatro recintos)
+    private double latEntrada = 0, longEntrada = 0; // PONER LAS POSICIONES DE LAS AULAS DE LA UNI!!!
+    private double latPalacios = 37.188691, longPalacios = -3.6178247; // Posición de mi casa
+    private double latGeneralife = 50, longGeneralife = 50;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,17 +93,103 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         mHandler = new Handler();
 
-        // Cambio a la actividad para probar la localización
-        //Intent intent = new Intent(this, ShowLocationActivity.class);
-        //startActivity(intent);
-
         setContentView(R.layout.activity_main);
 
         getSensors();
 
-        //setContentView(R.layout.mostrar_localizacion);
+        // Iniciamos la funcionalidad para obtener la localización
 
-        txtOrientation = findViewById(R.id.txtOrientation);
+        // QUITAR
+        this.txtLocation = (TextView) findViewById(R.id.txtLocation);
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        // Pedir permisos si es necesario
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && checkSelfPermission(ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this, new String[]{ACCESS_COARSE_LOCATION,
+                    ACCESS_FINE_LOCATION}, 1);
+        }
+        else{
+            mFusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
+                if (location != null) {
+                    wayLatitude = location.getLatitude();
+                    wayLongitude = location.getLongitude();
+                    txtLocation.setText(Double.toString(wayLatitude) + ", " +
+                            Double.toString(wayLongitude));
+                }
+            });
+        }
+
+        locationRequest = LocationRequest.create();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY); // Obtengo la localización con la mayor precisión posible
+        locationRequest.setInterval(updateInterval);
+
+        // Código que se ejecuta cada vez que se obtiene una nueva localización
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    wayLatitude = location.getLatitude();
+                    wayLongitude = location.getLongitude();
+
+                    txtLocation.setText(Double.toString(wayLatitude) + " - "
+                                        + Double.toString(wayLongitude));
+
+                    // Activo el recinto más cercano al punto actual
+                    float[] dist_a_entrada = new float[3];
+                    float[] dist_a_palacios = new float[3];
+                    float[] dist_a_generalife = new float[3];
+
+                    // Calculo la distancia de la posición actual al centro de cada recinto
+                    // Las distancias se guardan en la posición 0 del array pasado como último parámetro al método
+                    Location.distanceBetween(wayLatitude, wayLongitude, latEntrada, longEntrada, dist_a_entrada);
+                    Location.distanceBetween(wayLatitude, wayLongitude, latPalacios, longPalacios, dist_a_palacios);
+                    Location.distanceBetween(wayLatitude, wayLongitude, latGeneralife, longGeneralife, dist_a_generalife);
+
+                    // Obtengo los recintos
+                    RecintoMapa entrada = (RecintoMapa)findViewById(R.id.recinto_entrada);
+                    RecintoMapa palacios = (RecintoMapa)findViewById(R.id.recinto_palacios);
+                    RecintoMapa generalife = (RecintoMapa)findViewById(R.id.recinto_generalife);
+
+                    if (dist_a_entrada[0] < dist_a_palacios[0] && dist_a_entrada[0] < dist_a_generalife[0]){
+                        // Activo el recinto de entrada
+                        entrada.changeActivation(1);
+
+                        // Desactivo el resto (por si estuvieran activados)
+                        palacios.changeActivation(0);
+                        generalife.changeActivation(0);
+                    }
+                    else if (dist_a_palacios[0] < dist_a_generalife[0]){
+                        // Activo el recinto de los palacios
+                        palacios.changeActivation(1);
+
+                        // Desactivo el resto (por si estuvieran activados)
+                        entrada.changeActivation(0);
+                        generalife.changeActivation(0);
+                    }
+                    else{
+                        // Activo el recinto del generalife
+                        generalife.changeActivation(1);
+
+                        // Desactivo el resto (por si estuvieran activados)
+                        palacios.changeActivation(0);
+                        entrada.changeActivation(0);
+                    }
+
+                    // Invalido el mapa para que se vuelva a pintar
+                    View mapa = findViewById(R.id.mapa);
+                    mapa.invalidate();
+                }
+            };
+        };
+
+        // Periódicamente obtenemos la localización
+        startLocationUpdates();
     }
 
     private void getSensors(){
@@ -79,15 +204,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onResume();
         mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI); // Sensor_Delay_UI -> cada cuanto se obtienen datos de los sensores
         mSensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_UI);
+        startLocationUpdates();
     }
 
     // Cuando la aplicación pasa a segundo plano, se deja de actualizar la información de los sensores
     protected void onPause() {
         super.onPause();
         mSensorManager.unregisterListener(this);
+        stopLocationUpdates();
     }
 
-    // MAL: hay un bug que hace que parpadee
     private void setMapRotation(int old_azimuth, int new_azimuth){
         ConstraintLayout map = (ConstraintLayout)findViewById(R.id.mapa);
 
@@ -188,9 +314,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                         // Roto el mapa según el azimuth
                         setMapRotation(azimuth_prev, azimuth);
-
-                        // Quitar
-                        txtOrientation.setText("Azimuth: " + Integer.toString(azimuth));
                     }
                 }
             }
@@ -289,5 +412,40 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         return true;
+    }
+
+    private void startLocationUpdates() {
+        mFusedLocationClient.requestLocationUpdates(locationRequest,
+                locationCallback,
+                Looper.getMainLooper());
+    }
+
+    private void stopLocationUpdates() {
+        mFusedLocationClient.removeLocationUpdates(locationCallback);
+    }
+
+    // Método que se ejecuta tras pedir los permisos
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case 1: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    mFusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
+                        if (location != null) {
+                            wayLatitude = location.getLatitude();
+                            wayLongitude = location.getLongitude();
+                            txtLocation.setText(Double.toString(wayLatitude) + ", " +
+                                    Double.toString(wayLongitude));
+                        }
+                    });
+                } else {
+                    Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            }
+        }
     }
 }

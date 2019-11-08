@@ -62,6 +62,10 @@ public class RecintoMapa extends FrameLayout {
             arrayIntervals.add(interval);
             arrayPointsInterest.add("> Punto de interés del recinto de los Palacios. Años: [1400, 1600]");
         }
+
+        // Si es el recinto de la entrada, lo activo inicialmente
+        if (view_id.equals("com.example.practica1_npi:id/recinto_entrada"))
+            activation = 1; // El usuario empieza inicialmente en la entrada
     }
 
     @Override
@@ -215,7 +219,6 @@ public class RecintoMapa extends FrameLayout {
             // Pulsamos
             case MotionEvent.ACTION_DOWN: {
                 if (pointOfInterestActivated) { // Si el punto de interés está activado
-                    // <TODO>
                     // Cambio a la actividad para mostar la información del punto de interés si el año es el correcto
                     Activity main_activity = (Activity)getContext();
 
