@@ -22,3 +22,6 @@ Lo grupal (proyecto, memoria técnica y vídeo) lo sube solo un integrante del g
 La memoria individual la subimos todos.
 
 
+---- Diagrama de clases
+
+Muy simplificado. Solo las cajas con los nombres de las clases y flechas con las relaciones entre las clases. No hace falta escribir los atributos y métodos (ya los hemos puesto aparte).

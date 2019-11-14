@@ -83,9 +83,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private int updateInterval = 2000; // Cada cuánto se actualiza la posición como muy pronto (en milisegundos)
 
     // Posición (del centro) de cada recinto (uso la funcionalidad de la localización con 3 de los cuatro recintos)
-    private double latEntrada = 0, longEntrada = 0; // PONER LAS POSICIONES DE LAS AULAS DE LA UNI!!!
-    private double latPalacios = 37.188691, longPalacios = -3.6178247; // Posición de mi casa
-    private double latGeneralife = 50, longGeneralife = 50;
+    private double latEntrada = 37.1973584, longEntrada = -3.6246068; // Posición del aula de la clase de prácticas de NPI
+    private double latPalacios = 37.1972543, longPalacios = -3.6240355; // Posición del pasillo posición izquierda
+    private double latGeneralife = 37.1972703, longGeneralife = -3.6246068; // Posición del exterior
 
     private int veces_para_cambiar_loc = 5; // Número de veces consecutivas que la localización se debe detectar cercana a un recinto diferente para que se active
     private int cambios_loc_consecutivos = 0; // Número de veces consecutivas que se ha medido la localización en un recinto diferente
