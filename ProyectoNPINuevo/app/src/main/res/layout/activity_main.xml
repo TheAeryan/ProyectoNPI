@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/vista_principal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MapaTemporal"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="60"
+        android:background="#C0E3EB"
+        android:orientation="vertical">
+
+        <com.example.practica1_npi.Mapa
+            android:id="@+id/mapa"
+            android:layout_width="270dp"
+            android:layout_height="270dp"
+            android:layout_gravity="center"
+            android:background="@drawable/fondo_mapa"
+            android:rotation="0">
+
+            <com.example.practica1_npi.RecintoMapa
+                android:id="@+id/recinto_entrada"
+                android:layout_width="0px"
+                android:layout_height="0px"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/recinto_generalife"
+                app:layout_constraintVertical_weight="0.2"
+                tools:layout_editor_absoluteX="0dp"></com.example.practica1_npi.RecintoMapa>
+
+            <com.example.practica1_npi.RecintoMapa
+                android:id="@+id/recinto_generalife"
+                android:layout_width="0px"
+                android:layout_height="0px"
+                app:layout_constraintBottom_toTopOf="@+id/recinto_entrada"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_weight="0.4"
+                app:layout_constraintStart_toEndOf="@+id/recinto_palacios"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_weight="0.8"></com.example.practica1_npi.RecintoMapa>
+
+            <com.example.practica1_npi.RecintoMapa
+                android:id="@+id/recinto_alcazaba"
+                android:layout_width="0px"
+                android:layout_height="0px"
+                app:layout_constraintBottom_toTopOf="@+id/recinto_palacios"
+                app:layout_constraintEnd_toStartOf="@+id/recinto_generalife"
+                app:layout_constraintHorizontal_weight="0.6"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_weight="0.3">
+
+            </com.example.practica1_npi.RecintoMapa>
+
+            <com.example.practica1_npi.RecintoMapa
+                android:id="@+id/recinto_palacios"
+                android:layout_width="0px"
+                android:layout_height="0px"
+                app:layout_constraintBottom_toTopOf="@+id/recinto_entrada"
+                app:layout_constraintEnd_toStartOf="@+id/recinto_generalife"
+                app:layout_constraintHorizontal_weight="0.6"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/recinto_alcazaba"
+                app:layout_constraintVertical_bias="1.0"
+                app:layout_constraintVertical_weight="0.5"></com.example.practica1_npi.RecintoMapa>
+
+        </com.example.practica1_npi.Mapa>
+
+
+        <android.gesture.GestureOverlayView
+            android:id="@+id/gesture_time_line"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gestureColor="#DBD4C5"
+            android:gestureStrokeType="multiple"
+            android:uncertainGestureColor="#E0D8B5" />
+
+
+    </FrameLayout>
+
+    <com.example.practica1_npi.LineaTemporal
+        android:id="@+id/linea_temporal"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="40"
+        android:background="#C0E3EB"></com.example.practica1_npi.LineaTemporal>
+
+</LinearLayout>

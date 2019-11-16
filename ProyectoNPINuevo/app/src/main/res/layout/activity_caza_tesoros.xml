@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".CazaTesoros.CazaTesoros">
+
+    <android.gesture.GestureOverlayView
+        android:id="@+id/gesture_treasure_hunt"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:gestureColor="#FF0000"
+        android:gestureStrokeType="multiple"
+        android:uncertainGestureColor="#E0D8B5">
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/constraintLayout1"
+                android:layout_width="407dp"
+                android:layout_height="99dp"
+                android:background="#CDF0B1"
+                app:layout_constraintBottom_toTopOf="@+id/constraintLayout2"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Can you find all?"
+                    android:textAlignment="center"
+                    android:textAllCaps="false"
+                    android:textSize="36sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.505" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <com.example.practica1_npi.CazaTesoros.DropContenedor
+                android:id="@+id/clue"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:background="#4CAF50"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/scan"
+                app:layout_constraintTop_toBottomOf="@+id/constraintLayout2">
+
+                <TextView
+                    android:id="@+id/textView3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Clue"
+                    android:textAlignment="center"
+                    android:textSize="36sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </com.example.practica1_npi.CazaTesoros.DropContenedor>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/constraintLayout2"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:background="#CDF0B1"
+                app:layout_constraintBottom_toTopOf="@+id/scan"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/constraintLayout1">
+
+                <com.example.practica1_npi.CazaTesoros.Imagen
+                    android:id="@+id/imagen1"
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    app:esQR="false"
+                    app:layout_constraintBottom_toTopOf="@+id/imagen4"
+                    app:layout_constraintEnd_toStartOf="@+id/imagen2"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/i1" />
+
+
+                <com.example.practica1_npi.CazaTesoros.Imagen
+                    android:id="@+id/imagen2"
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    android:tag="imagen2"
+                    app:esQR="false"
+                    app:layout_constraintBottom_toTopOf="@+id/imagen5"
+                    app:layout_constraintEnd_toStartOf="@+id/imagen3"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toEndOf="@+id/imagen1"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/i2" />
+
+                <com.example.practica1_npi.CazaTesoros.Imagen
+                    android:id="@+id/imagen3"
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    app:esQR="false"
+                    app:layout_constraintBottom_toTopOf="@+id/imagen6"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toEndOf="@+id/imagen2"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/i6" />
+
+                <com.example.practica1_npi.CazaTesoros.Imagen
+                    android:id="@+id/imagen4"
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    app:esQR="false"
+                    app:layout_constraintBottom_toTopOf="@+id/qr1"
+                    app:layout_constraintEnd_toStartOf="@+id/imagen5"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/imagen1"
+                    app:srcCompat="@drawable/i4" />
+
+                <com.example.practica1_npi.CazaTesoros.Imagen
+                    android:id="@+id/imagen5"
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    app:esQR="false"
+                    app:layout_constraintBottom_toTopOf="@+id/qr2"
+                    app:layout_constraintEnd_toStartOf="@+id/imagen6"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toEndOf="@+id/imagen4"
+                    app:layout_constraintTop_toBottomOf="@+id/imagen2"
+                    app:srcCompat="@drawable/i5" />
+
+                <com.example.practica1_npi.CazaTesoros.Imagen
+                    android:id="@+id/imagen6"
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    app:esQR="false"
+                    app:layout_constraintBottom_toTopOf="@+id/qr3"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toEndOf="@+id/imagen5"
+                    app:layout_constraintTop_toBottomOf="@+id/imagen3"
+                    app:srcCompat="@drawable/i3" />
+
+                <com.example.practica1_npi.CazaTesoros.Imagen
+                    android:id="@+id/qr1"
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    app:esQR="true"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/qr2"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/imagen4"
+                    app:srcCompat="@drawable/qr" />
+
+                <com.example.practica1_npi.CazaTesoros.Imagen
+                    android:id="@+id/qr2"
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    app:esQR="true"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/qr3"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toEndOf="@+id/qr1"
+                    app:layout_constraintTop_toBottomOf="@+id/imagen5"
+                    app:srcCompat="@drawable/qr" />
+
+                <com.example.practica1_npi.CazaTesoros.Imagen
+                    android:id="@+id/qr3"
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    app:esQR="true"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toEndOf="@+id/qr2"
+                    app:layout_constraintTop_toBottomOf="@+id/imagen6"
+                    app:srcCompat="@drawable/qr" />
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <com.example.practica1_npi.CazaTesoros.DropContenedor
+                android:id="@+id/scan"
+                android:layout_width="0dp"
+                android:layout_height="133dp"
+                android:background="#8BC34A"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/clue"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/constraintLayout2">
+
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Scan "
+                    android:textAlignment="center"
+                    android:textSize="36sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </com.example.practica1_npi.CazaTesoros.DropContenedor>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </android.gesture.GestureOverlayView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
