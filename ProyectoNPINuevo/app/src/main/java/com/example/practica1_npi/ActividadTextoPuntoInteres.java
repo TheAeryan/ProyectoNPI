@@ -19,7 +19,7 @@ public class ActividadTextoPuntoInteres extends AppCompatActivity {
 
     /**
      * Método llamado cuando se cambia a esta actividad.
-     * Le asocia la vista "activity_texto_punto_interes", obtiene el texto a mostrar a partir
+     * Le asocia el layout "activity_texto_punto_interes", obtiene el texto a mostrar a partir
      * del Intent y lo muestra usando un textView.
      * @param savedInstanceState Conjunto de datos del estado de la instancia.
      */

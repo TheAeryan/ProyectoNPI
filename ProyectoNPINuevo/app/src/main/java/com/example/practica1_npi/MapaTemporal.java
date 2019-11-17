@@ -80,7 +80,6 @@ public class MapaTemporal extends AppCompatActivity implements SensorEventListen
      */
     private int umbralAzimuth = 30;
 
-    // <Atributos para la animación de la rotación>
 
     /**
      * <i>Runnable</i> que define la animación de la rotación del mapa. La rotación del mapa (ante
@@ -112,7 +111,6 @@ public class MapaTemporal extends AppCompatActivity implements SensorEventListen
      */
     private int azimuthAnim; // Azimuth actual de la animación (cuando la animación termina, este valor coincide con azimuth)
 
-    // <Atributos para el manejo de la línea temporal>
 
     /**
      * Posición <i>x</i> anterior de la pulsación sobre la pantalla. Se calcula como la media de
@@ -147,7 +145,6 @@ public class MapaTemporal extends AppCompatActivity implements SensorEventListen
      */
     private float yearChangeFactor = 0.15f;
 
-    // <Atributos para el manejo de la localización del usuario>
 
     /**
      * Latitud de la localización actual del usuario.
@@ -251,6 +248,18 @@ public class MapaTemporal extends AppCompatActivity implements SensorEventListen
     private int recinto_activado = 0;
 
 
+    /**
+     * Método llamado cuando se crea/cambia a esta actividad.
+     * Realiza las siguientes tareas:
+     * <ul>
+     * <li> Le asocia el layout "activity_main.xml"
+     * <li> Obtiene los sensores (llama a {@link #getSensors()})
+     * <li> Inicializa la funcionalidad para obtener la localización (mediante el uso
+     *      de {@link #mFusedLocationClient}). Llama a {@link #startLocationUpdates()}
+     *      para que se empiece a obtener la localización de forma periódica.
+     * </ul>
+     * @param savedInstanceState Conjunto de datos del estado de la instancia.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -259,8 +268,8 @@ public class MapaTemporal extends AppCompatActivity implements SensorEventListen
 
         setContentView(R.layout.activity_main);
 
+        // Obtenemos los sensores
         getSensors();
-
 
         // Iniciamos la funcionalidad para obtener la localización
 
@@ -375,6 +384,11 @@ public class MapaTemporal extends AppCompatActivity implements SensorEventListen
         startLocationUpdates();
     }
 
+    /**
+     * Obtiene los sensores del dispositivo para el magnetómetro ({@link #magnetometer}) y
+     * accelerómetro ({@link #accelerometer}).
+     * @see #mSensorManager
+     */
     private void getSensors(){
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
 
@@ -382,7 +396,13 @@ public class MapaTemporal extends AppCompatActivity implements SensorEventListen
         magnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
     }
 
-    // Se añade el Listener cuando la aplicación vuelve a estar activa
+    /**
+     * Método que se ejecuta cuando se reanuda la aplicación (vuelve a pasar a primer plano
+     * después de haber estado en segundo plano).
+     * Reanuda la obtención de datos de los sensores y de la localización.
+     * @see #onPause()
+     * @see #startLocationUpdates()
+     */
     protected void onResume() {
         super.onResume();
         mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI); // Sensor_Delay_UI -> cada cuanto se obtienen datos de los sensores
@@ -390,13 +410,30 @@ public class MapaTemporal extends AppCompatActivity implements SensorEventListen
         startLocationUpdates();
     }
 
-    // Cuando la aplicación pasa a segundo plano, se deja de actualizar la información de los sensores
+
+    /**
+     * Método ejecutado cuando la aplicación se pausa (pasa a segundo plano).
+     * Deja de obtener datos de los sensores y localización hasta que la aplicación vuelva
+     * a primer plano.
+     * @see #onResume()
+     * @see #stopLocationUpdates()
+     */
     protected void onPause() {
         super.onPause();
         mSensorManager.unregisterListener(this);
         stopLocationUpdates();
     }
 
+    /**
+     * Rota el mapa ante un cambio en el {@link #azimuth} del dispositivo.
+     * La rotación se lleva a cabo de forma progresiva, mediante el uso de {@link #mapAnimation}.
+     * @param old_azimuth Azimuth antiguo del dispositivo (antes de aplicar la nueva rotación al mapa).
+     * @param new_azimuth Nuevo azimuth del dispositivo, con el que se debe corresponder el mapa tras aplicar la rotación.
+     * @see Mapa
+     * @see #mapAnimation
+     * @see #currAnimIt
+     * @see #totalAnimIt
+     */
     private void setMapRotation(int old_azimuth, int new_azimuth){
         ConstraintLayout map = (ConstraintLayout)findViewById(R.id.mapa);
 
@@ -457,9 +494,28 @@ public class MapaTemporal extends AppCompatActivity implements SensorEventListen
         mHandler.postDelayed(mapAnimation, dur_inc);
     }
 
+    /**
+     * Método llamado cuando cambia la precisión de las medidas de un sensor.
+     * En este prototipo, no hace nada.
+     * @param sensor Sensor cuyas medidas han cambiado de precisión.
+     * @param accuracy Nueva precisión del sensor.
+     */
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
-    // Método que se llama automáticamente cuando hay nuevos datos de sensores
+
+    /**
+     * Método llamado cada vez que se reciben nuevos datos de sensores (en nuestro caso,
+     * del {@link #magnetometer} o {@link #accelerometer}).
+     * En función del tipo de sensor, se guardan los valores de la medida en {@link #mGravity}
+     * o {@link #mGeomagnetic}.
+     * Acto seguido, si se tienen los datos de ambos sensores, se calcula la orientación
+     * del dispositivo ({@link #azimuth}), mediante los métodos
+     * {@link SensorManager#getRotationMatrix(float[], float[], float[], float[])} y
+     * {@link SensorManager#getOrientation(float[], float[])}.
+     * Por último, si el cambio de orientación supera al umbral {@link #umbralAzimuth},
+     * se rota el mapa mediante {@link #setMapRotation(int, int)}.
+     * @param event Objeto que encapsula los datos de la medida producida.
+     */
     public void onSensorChanged(SensorEvent event){
 
         // Solo tengo en cuenta las mediciones con cierta precisión
@@ -471,7 +527,7 @@ public class MapaTemporal extends AppCompatActivity implements SensorEventListen
             if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
                 mGeomagnetic = event.values;
 
-            // Calcular orientación una vez tenemos
+            // Calcular orientación una vez tenemos los datos de ambos sensores
             if (mGravity != null && mGeomagnetic != null) {
                 float R[] = new float[9];
                 float I[] = new float[9];
@@ -503,7 +559,14 @@ public class MapaTemporal extends AppCompatActivity implements SensorEventListen
         }
     }
 
-    // Los azimuths tienen que ser en grados
+
+    /**
+     * Calcula la distancia, en grados sexagesimales, entre dos azimuths distintos.
+     * @param a Azimuth 1.
+     * @param b Azimuth 2.
+     * @return Distancia entre <i>a</i> y <i>b</i>.
+     * @see #azimuth
+     */
     private int distAzimuths(int a, int b){
         int az_a, az_b;
 
@@ -520,11 +583,19 @@ public class MapaTemporal extends AppCompatActivity implements SensorEventListen
         return Math.abs(az_a - az_b);
     }
 
-    //GESTOS
-    /** Carga los gestos **/
-
-
-
+    /**
+     * Método llamado cuando se produce un <i>TouchEvent</i> (se toca la pantalla).
+     * Se encarga de modificar el año de la línea temporal. Para ello, el usuario
+     * debe arrastrar <b>dos dedos</b> en la pantalla de izquierda a derecha, si quiere
+     * avanzar en el año actual, o de derecha a izquierda, si quiere retroceder de año.
+     * El gesto no tiene por qué realizarse sobre la línea temporal, sino que puede ser
+     * en cualquier lugar de la pantalla.
+     * @param event
+     * @see LineaTemporal
+     * @see #gestureStarted
+     * @see #oldX
+     * @see #newX
+     */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         super.onTouchEvent(event);
@@ -602,17 +673,41 @@ public class MapaTemporal extends AppCompatActivity implements SensorEventListen
         return true;
     }
 
+    /**
+     * Método llamado para empezar a obtener de forma periódica la localización del usuario.
+     * @see #mFusedLocationClient
+     * @see #stopLocationUpdates()
+     */
     private void startLocationUpdates() {
         mFusedLocationClient.requestLocationUpdates(locationRequest,
                 locationCallback,
                 Looper.getMainLooper());
     }
 
+    /**
+     * Método llamado para dejar de obtener de forma periódica la localización del usuario.
+     * Este método se llama en {@link #onPause()} para así ahorrar energía mientras la aplicación
+     * está en segundo plano.
+     * @see #mFusedLocationClient
+     * @see #stopLocationUpdates()
+     */
     private void stopLocationUpdates() {
         mFusedLocationClient.removeLocationUpdates(locationCallback);
     }
 
-    // Método que se ejecuta tras pedir los permisos
+
+    /**
+     * Método ejecutado tras pedirle permisos de aplicación al usuario.
+     * En nuestro caso, se ejecuta tras pedirle los permisos para obtener la localización (
+     * ACCESS_FINE_LOCATION y ACCESS_COARSE_LOCATION).
+     * Si el usuario ha concedido los permisos a la aplicación, se obtiene la posición inicial del
+     * dispositivo y se guarda en {@link #wayLongitude}, {@link #wayLatitude}. En caso contrario,
+     * se muestra un mensaje mediante un <i>Toast</i>.
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     * @see #mFusedLocationClient
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
